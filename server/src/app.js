@@ -1,0 +1,28 @@
+const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const env = require('./config/env');
+const corsOptions = require('./config/cors');
+const routes = require('./routes');
+const notFound = require('./middleware/notFound');
+const errorHandler = require('./middleware/errorHandler');
+
+const app = express();
+
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
+app.use(helmet());
+app.use(cors(corsOptions));
+app.use(express.json({ limit: '20kb' }));
+app.use(express.urlencoded({ extended: false, limit: '20kb' }));
+app.use(cookieParser());
+if (env.nodeEnv !== 'test') app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
+
+app.use('/api', routes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+module.exports = app;
