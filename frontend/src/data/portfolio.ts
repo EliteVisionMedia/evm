@@ -6,10 +6,23 @@
  */
 
 export const categories = [
-  'All Work', 'Photography', 'Model Photoshoot', 'Reels',
+  'All Work', 'Photography', 'Model Photoshoot', 'Reels', 'Video Production',
   'Website Portfolio', 'Photography & Posters', 'Product Shoot',
 ] as const;
 export type Category = (typeof categories)[number];
+
+/** "Our Work" navbar dropdown: each entry opens /work filtered to an existing category. */
+export const workMenu: { label: string; slug: string; cat: Category; note: string; thumb: string }[] = [
+  { label: 'Reels', slug: 'reels', cat: 'Reels', note: 'Short-form vertical videos', thumb: '/videos/reels/happy-ending.webp' },
+  { label: 'Photography', slug: 'photography', cat: 'Photography', note: 'Product, model & editorial shoots', thumb: '/images/work/product/product-01.webp' },
+  { label: 'Model Photography', slug: 'model-photography', cat: 'Model Photoshoot', note: 'Model photoshoot portfolios', thumb: '/images/work/model/model-01.webp' },
+  { label: 'Website Development', slug: 'website-development', cat: 'Website Portfolio', note: 'Websites we have built', thumb: '/images/services/web-design-laptop.webp' },
+  { label: 'Video Production', slug: 'video-production', cat: 'Video Production', note: 'Showreel & corporate films', thumb: '/videos/reels/showreel.webp' },
+  { label: 'Branding & Creative Work', slug: 'branding-creative', cat: 'Photography & Posters', note: 'Posters & creative design', thumb: '/images/work/posters/poster-01.webp' },
+];
+export const workCatPath = (slug: string) => `/work?category=${slug}`;
+export const catFromSlug = (slug: string | null): Category | undefined => workMenu.find((m) => m.slug === slug)?.cat;
+export const slugFromCat = (c: Category) => workMenu.find((m) => m.cat === c)?.slug;
 
 /** Hero stats. Hidden until `verified` is true: the brief asks for these to be confirmed first. */
 export const stats = [
@@ -52,8 +65,8 @@ const reel = (id: string, title: string, file: string): VideoItem => ({
   poster: `/videos/reels/${file}.webp`, video: `/videos/reels/${file}.mp4`, placeholder: false,
 });
 export const videos: VideoItem[] = [
-  { ...reel('r0', 'EVM Showreel', 'showreel'), type: 'Showreel', wide: true },
-  { ...reel('r5', 'Corporate Film', 'video-project-4'), type: 'Corporate Video', wide: true },
+  { ...reel('r0', 'EVM Showreel', 'showreel'), type: 'Showreel', wide: true, cats: ['Reels', 'Video Production'] },
+  { ...reel('r5', 'Corporate Film', 'video-project-4'), type: 'Corporate Video', wide: true, cats: ['Reels', 'Video Production'] },
   reel('r1', 'Happy Ending', 'happy-ending'),
   reel('r2', 'Reel 29', 'reel-29'),
   reel('r3', 'Crumbor R04', 'crumbor-r04'),

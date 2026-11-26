@@ -16,6 +16,7 @@ const requiredText = (field, label, max) =>
 module.exports = [
   requiredText('firstName', 'First name', 60),
   requiredText('lastName', 'Last name', 60),
+  requiredText('location', 'Location', 120),
 
   body('email')
     .exists({ values: 'falsy' }).withMessage('Email address is required.').bail()

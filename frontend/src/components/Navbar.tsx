@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Menu, X } from 'lucide-react';
 import { servicePages } from '../data/services';
 import { contact, navLinks, socials } from '../data/site';
 import { detailPath, detailsFor } from '../data/serviceDetails';
+import { workCatPath, workMenu } from '../data/portfolio';
 import Logo from './Logo';
 import Button from './Button';
 import SocialIcon from './SocialIcon';
@@ -34,9 +35,12 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [dropdown, setDropdown] = useState(false);
   const [mobileServices, setMobileServices] = useState(false);
+  const [workDrop, setWorkDrop] = useState(false);
+  const [mobileWork, setMobileWork] = useState(false);
+  const { pathname, hash, search } = useLocation();
+  const activeWork = pathname === '/work' ? new URLSearchParams(search).get('category') : null;
   const [sub, setSub] = useState(dropdownItems[0].slug);
   const subItem = dropdownItems.find((d) => d.slug === sub) ?? dropdownItems[0];
-  const { pathname, hash } = useLocation();
 
   const onDarkHero = !scrolled && !open && darkHeroRoutes.has(pathname);
 
@@ -61,7 +65,9 @@ export default function Navbar() {
     setOpen(false);
     setDropdown(false);
     setMobileServices(false);
-  }, [pathname, hash]);
+    setWorkDrop(false);
+    setMobileWork(false);
+  }, [pathname, hash, search]);
 
   useEffect(() => {
     if (!open) return;
@@ -109,6 +115,56 @@ export default function Navbar() {
             <ul className="hidden items-center gap-6 text-[15px] font-medium lg:flex xl:gap-8">
               {headerLinks.map((link) => {
                 const isServices = link.to === '/services';
+                if (link.to === '/work') return (
+                  <li
+                    key={link.to}
+                    className="relative"
+                    onMouseEnter={() => setWorkDrop(true)}
+                    onMouseLeave={() => setWorkDrop(false)}
+                    onFocus={() => setWorkDrop(true)}
+                    onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setWorkDrop(false)}
+                    onKeyDown={(e) => e.key === 'Escape' && setWorkDrop(false)}
+                  >
+                    <RouterNavLink to="/work" className="group relative flex items-center gap-1.5 py-1.5" aria-haspopup aria-expanded={workDrop}
+                      onClick={(e) => { if (!workDrop && window.matchMedia('(hover: none)').matches) { e.preventDefault(); setWorkDrop(true); } }}>
+                      <span>{link.label}</span>
+                      <ChevronDown size={15} className={`mt-0.5 transition-transform duration-300 ${workDrop ? 'rotate-180 text-teal' : ''}`} />
+                      <span className={`absolute inset-x-0 -bottom-0.5 h-0.5 origin-left bg-teal transition-transform duration-300 ${pathname === '/work' ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`} />
+                    </RouterNavLink>
+                    <AnimatePresence>
+                      {workDrop && (
+                        <motion.div
+                          className="absolute left-1/2 top-full z-50 w-[600px] -translate-x-1/2 pt-4"
+                          initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 6, scale: 0.98 }}
+                          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                          <div className="overflow-hidden rounded-[18px] border border-line bg-white p-3 text-ink shadow-[0_24px_50px_-20px_rgba(12,13,17,0.25)]">
+                            <ul className="grid grid-cols-2 gap-1">
+                              {workMenu.map((w, i) => (
+                                <motion.li key={w.slug} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 + i * 0.035, duration: 0.25 }}>
+                                  <Link to={workCatPath(w.slug)} className={`group/w flex items-center gap-3 rounded-xl p-2 transition-colors duration-200 hover:bg-[#e6f4f4] ${activeWork === w.slug ? 'bg-[#e6f4f4]' : ''}`}>
+                                    <span className="h-14 w-14 flex-none overflow-hidden rounded-lg bg-mist">
+                                      <img src={w.thumb} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover/w:scale-110" />
+                                    </span>
+                                    <span className="min-w-0">
+                                      <span className={`block text-[15px] font-semibold ${activeWork === w.slug ? 'text-teal-deep' : ''} group-hover/w:text-teal-deep`}>{w.label}</span>
+                                      <span className="block truncate text-[13px] text-slate">{w.note}</span>
+                                    </span>
+                                  </Link>
+                                </motion.li>
+                              ))}
+                            </ul>
+                            <Link to="/work" className="mt-2 flex items-center justify-between rounded-xl bg-[#f7fbfb] px-4 py-3 text-sm font-semibold text-teal-deep transition-colors hover:bg-[#e6f4f4]">
+                              View all work <ChevronRight size={16} />
+                            </Link>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </li>
+                );
                 return (
                   <li
                     key={link.to}
@@ -265,7 +321,45 @@ export default function Navbar() {
                     transition={{ delay: 0.15 + i * 0.05, duration: 0.4 }}
                     className="border-b border-line"
                   >
-                    {link.to === '/services' ? (
+                    {link.to === '/work' ? (
+                      <>
+                        <button
+                          type="button"
+                          aria-expanded={mobileWork}
+                          aria-controls="mobile-work"
+                          onClick={() => setMobileWork((v) => !v)}
+                          className={`flex w-full items-center justify-between py-4 text-left font-display text-[32px] font-bold tracking-[-0.01em] ${pathname === '/work' ? 'text-teal-deep' : ''}`}
+                        >
+                          {link.label}
+                          <ChevronDown size={26} className={`text-slate transition-transform duration-300 ${mobileWork ? 'rotate-180' : ''}`} />
+                        </button>
+                        <AnimatePresence initial={false}>
+                          {mobileWork && (
+                            <motion.ul
+                              id="mobile-work"
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                              className="overflow-hidden"
+                            >
+                              {workMenu.map((w) => (
+                                <li key={w.slug}>
+                                  <Link to={workCatPath(w.slug)} className={`flex min-h-[56px] items-center gap-3 rounded-xl px-2 text-lg font-medium ${activeWork === w.slug ? 'bg-[#e6f4f4] text-teal-deep' : 'text-ink'}`}>
+                                    <img src={w.thumb} alt="" loading="lazy" className="h-10 w-10 flex-none rounded-lg object-cover" />
+                                    {w.label}
+                                  </Link>
+                                </li>
+                              ))}
+                              <li>
+                                <Link to="/work" className="flex min-h-[48px] items-center justify-between px-2 text-[15px] font-semibold text-teal-deep">View all work <ChevronRight size={18} /></Link>
+                              </li>
+                              <li className="h-3" />
+                            </motion.ul>
+                          )}
+                        </AnimatePresence>
+                      </>
+                    ) : link.to === '/services' ? (
                       <>
                         <button
                           type="button"

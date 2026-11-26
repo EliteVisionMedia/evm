@@ -27,14 +27,15 @@ const schema = [
   breadcrumbSchema([{ name: 'Home', path: '/' }, { name: 'Contact', path: '/contact' }]),
 ];
 
-type Fields = { firstName: string; lastName: string; email: string; phone: string; service: string[]; message: string; website: string };
+type Fields = { firstName: string; lastName: string; location: string; email: string; phone: string; service: string[]; message: string; website: string };
 type Errors = Partial<Record<keyof Fields, string>>;
-const empty: Fields = { firstName: '', lastName: '', email: '', phone: '', service: [], message: '', website: '' };
+const empty: Fields = { firstName: '', lastName: '', location: '', email: '', phone: '', service: [], message: '', website: '' };
 
 function validate(f: Fields): Errors {
   const e: Errors = {};
   if (!f.firstName.trim()) e.firstName = 'Please enter your first name.';
   if (!f.lastName.trim()) e.lastName = 'Please enter your last name.';
+  if (!f.location.trim()) e.location = 'Please enter your city or location.';
   if (!f.email.trim()) e.email = 'Please enter your email address.';
   else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) e.email = 'Please enter a valid email address.';
   if (!f.phone.trim()) e.phone = 'Please enter your phone number.';
@@ -181,14 +182,14 @@ function ContactForm() {
     if (f.website) return; // honeypot: bots fill hidden fields
     const v = validate(f);
     setErrors(v);
-    setTouched({ firstName: true, lastName: true, email: true, phone: true, service: true, message: true });
+    setTouched({ firstName: true, lastName: true, location: true, email: true, phone: true, service: true, message: true });
     const first = Object.keys(v)[0];
     if (first) { formRef.current?.querySelector<HTMLElement>(`#${first}`)?.focus(); return; }
     inFlight.current = true;
     setStatus('sending');
     setServerMsg('');
     try {
-      await submitContact({ firstName: f.firstName.trim(), lastName: f.lastName.trim(), email: f.email.trim(), phone: f.phone.trim(), services: f.service, message: f.message.trim() });
+      await submitContact({ firstName: f.firstName.trim(), lastName: f.lastName.trim(), location: f.location.trim(), email: f.email.trim(), phone: f.phone.trim(), services: f.service, message: f.message.trim() });
       setStatus('sent');
       setF(empty); setTouched({});
     } catch (err) {
@@ -223,6 +224,9 @@ function ContactForm() {
             <Field id="lastName" label="Last Name" required error={errors.lastName}>
               <input {...a11y('lastName')} autoComplete="family-name" placeholder="Your last name" className={inputCls(errors.lastName)} />
             </Field>
+            <Field id="location" label="Location" required error={errors.location} className="sm:col-span-2">
+              <input {...a11y('location')} autoComplete="address-level2" placeholder="City, State" className={inputCls(errors.location)} />
+            </Field>
             <Field id="email" label="Email Address" required error={errors.email}>
               <input {...a11y('email')} type="email" inputMode="email" autoComplete="email" placeholder="you@company.com" className={inputCls(errors.email)} />
             </Field>
@@ -239,7 +243,7 @@ function ContactForm() {
               }}
               onClose={() => { setTouched((t) => ({ ...t, service: true })); setErrors((p) => ({ ...p, service: validate(f).service })); }}
             />
-            <Field id="message" label="Message" error={errors.message} className="sm:col-span-2">
+            <Field id="message" label="Lead Details / Message" error={errors.message} className="sm:col-span-2">
               <textarea {...a11y('message')} rows={5} placeholder="Tell us about your project, goals and timeline…" className={`${inputCls(errors.message)} resize-y`} />
             </Field>
             {/* Honeypot: hidden from people and screen readers. */}
@@ -278,12 +282,12 @@ function ContactForm() {
 function Hero() {
   return (
     <section className="wrap pb-10 pt-10 text-center md:pb-14 md:pt-16 lg:pt-20">
-      <motion.span className="kicker" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}>Tell us about your project.</motion.span>
+      <motion.span className="kicker" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }}>Let's work together</motion.span>
       <h1 className="h-display overflow-hidden pb-[0.08em] text-[13vw] leading-[1] md:text-[8vw] lg:text-[6.4vw] min-[1440px]:text-[92px]">
-        <motion.span className="block" initial={{ y: '105%' }} animate={{ y: '0%' }} transition={{ duration: 0.95, delay: 0.1, ease }}>Contact Us Today</motion.span>
+        <motion.span className="block" initial={{ y: '105%' }} animate={{ y: '0%' }} transition={{ duration: 0.95, delay: 0.1, ease }}>Contact Us</motion.span>
       </h1>
       <motion.p className="mx-auto mt-5 max-w-[58ch] text-base text-slate md:text-lg" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.35, ease }}>
-        We're thrilled that you're here! Let's make this as smooth and enjoyable as possible. Tell us what you're looking for, and let's start creating something great together.
+        Tell us about your business and what you need. Fill in the form below and the Elite Vision Media team will get back to you with next steps.
       </motion.p>
     </section>
   );
@@ -300,13 +304,13 @@ function FormSection() {
           initial={{ opacity: 0, clipPath: 'inset(12% 0% 0% 0% round 26px)' }}
           animate={{ opacity: 1, clipPath: 'inset(0% 0% 0% 0% round 26px)' }}
           transition={{ duration: 1.1, delay: 0.45, ease }}
-          className="group relative min-h-[240px] overflow-hidden rounded-[26px] sm:min-h-[340px] lg:min-h-0"
+          className="group flex flex-col overflow-hidden rounded-[26px]"
         >
-          <div className="absolute inset-0 transition-transform duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]">
-            <div className="grid h-full w-full place-items-center bg-white px-[18%] pb-[28%]"><img src={evmLogo} alt="Elite Vision Media logo" className="h-auto w-full object-contain" /></div>
+          <div className="grid flex-1 place-items-center overflow-hidden bg-white px-[14%] py-10 sm:py-14">
+            <img src={evmLogo} alt="Elite Vision Media logo" className="h-auto w-full max-w-[340px] object-contain transition-transform duration-[1200ms] ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]" />
           </div>
-          <div className="absolute inset-x-0 bottom-0 bg-ink p-6 text-white md:p-8">
-            <p className="font-display text-2xl font-bold leading-tight tracking-[-0.015em] md:text-3xl">Prefer to talk it through?</p>
+          <div className="bg-ink p-6 text-white md:p-8">
+            <p className="font-display text-xl font-bold leading-tight tracking-[-0.015em] md:text-2xl">Prefer to talk it through?</p>
             <a href={contact.whatsappWithText("Hi EVM, I'd like to discuss a project.")} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-[48px] items-center gap-2 rounded-full bg-white px-5 text-[15px] font-semibold text-ink transition-colors hover:bg-teal hover:text-white">
               <MessageCircle size={18} /> Chat on WhatsApp
             </a>
@@ -362,8 +366,8 @@ export default function Contact() {
   });
   return (
     <main>
-      <Hero />
       <FormSection />
+      <Hero />
       <ContactInfo />
     </main>
   );

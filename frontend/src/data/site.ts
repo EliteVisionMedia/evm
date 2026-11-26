@@ -61,9 +61,8 @@ export const services: Service[] = [
     description:
       'High-performance custom websites, full-stack web applications, and API-driven platforms engineered for speed and conversion.',
     tags: ['React & TypeScript', 'Full-Stack Web Apps', 'REST APIs & CMS', 'SEO & Speed Tuning'],
-    visual:
-      'linear-gradient(180deg, transparent 55%, rgba(12,13,17,.35)), radial-gradient(60% 70% at 30% 30%, #6fd3d4, transparent 60%), linear-gradient(135deg, #dff3f3, #9fd8d9)',
-    visualBadge: 'Website build · SAMPLE',
+    visual: "url('/images/services/web-design-laptop.webp') center / cover no-repeat, #11131c",
+    visualBadge: '',
   },
   {
     id: 'video-production',
@@ -141,15 +140,12 @@ export const projects: Project[] = [
 /** Add `logo: '/clients/name.svg'` to each entry when real logos are approved for use. */
 export const clients: ClientLogo[] = Array.from({ length: 6 }, (_, i) => ({ name: `Client ${i + 1}` }));
 
+/** Real Google reviews, copied word for word. Add `avatar` (an image path) when a reviewer photo is available; otherwise initials are shown. */
 export const testimonials: Testimonial[] = [
-  {
-    quote: 'A real client quote goes here. This large card is for the strongest one.',
-    name: 'Client Name',
-    company: 'Role, Company',
-    sample: true,
-  },
-  { quote: 'A real client quote goes here once permission is given.', name: 'Client Name', company: 'Role, Company', sample: true },
-  { quote: 'A real client quote goes here once permission is given.', name: 'Client Name', company: 'Role, Company', sample: true },
+  { quote: 'The best choice to choose EVM. So, friendly team to work with and the fabulous output.', name: 'Indhu Shanmugam', company: 'Google review', sample: false },
+  { quote: 'Very creative and supportive photographers. The pre wedding photography by Manoj turned out to be excellent. The entire experience was fun and smooth with beautiful outputs.', name: 'Srikanth M', company: 'Google review', sample: false },
+  { quote: 'Very good work done by Rajamani. Video editing done with good understanding of requirements and quick turn around. Thanks.', name: 'Vijayalakshmi S', company: 'Google review', sample: false },
+  { quote: 'Had a really nice experience! Everything was great, the atmosphere was lovely, and the service was good. Definitely a place worth visiting again. ✨', name: 'Nalini Kumari Kadem', company: 'Google review', sample: false },
 ];
 
 /**

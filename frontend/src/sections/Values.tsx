@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { Clapperboard, Lightbulb, Network, ShieldCheck, type LucideIcon } from 'lucide-react';
 
 /** Drop a team photo URL here to replace the designed panel. */
-const TEAM_PHOTO = '';
+const TEAM_PHOTO: string | null = '/images/about/values-growth.webp';
 
 const values: { icon: LucideIcon; title: string; text: string }[] = [
   {
@@ -73,10 +73,18 @@ export default function Values() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9, ease }}
-          className="group relative aspect-[1.68] overflow-hidden rounded-[14px] bg-coal"
+          className={`group relative aspect-[1.68] overflow-hidden rounded-[14px] ${TEAM_PHOTO ? 'bg-white ring-1 ring-mist' : 'bg-coal'}`}
         >
           {TEAM_PHOTO ? (
-            <img src={TEAM_PHOTO} alt="The EVM team" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+            <>
+              <span aria-hidden className="absolute -left-16 -top-16 h-56 w-56 rounded-full bg-[#e6f4f4]" />
+              <img src={TEAM_PHOTO} alt="Illustration of a tablet showing growth charts and analytics" className="absolute inset-y-0 -right-[2%] h-full w-[64%] scale-[1.3] object-contain transition-transform duration-700 group-hover:scale-[1.36]" />
+              <div className="absolute inset-y-0 left-0 flex w-[44%] flex-col justify-end p-6 md:p-7">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-teal">How we work</span>
+                <span className="mt-2 font-display text-3xl font-bold leading-[1.05] tracking-[-0.02em] text-ink md:text-4xl">One team.</span>
+                <span className="mt-2 text-sm leading-snug text-slate">Strategy, design, development and film, together.</span>
+              </div>
+            </>
           ) : (
             <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105 [background:radial-gradient(70%_90%_at_25%_30%,#019A9D_0%,transparent_60%),radial-gradient(60%_80%_at_85%_80%,#017F82_0%,transparent_65%),#1A1C25]">
               <span className="absolute bottom-5 left-5 font-display text-3xl font-bold text-white/90">One team.</span>

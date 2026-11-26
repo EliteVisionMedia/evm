@@ -1,11 +1,12 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react';
 import ReelGrid from '../components/work/ReelGrid';
 import EditorialGallery from '../components/work/EditorialGallery';
 import WebsiteShowcase from '../components/work/WebsiteShowcase';
 import ServiceCTA from '../components/services/ServiceCTA';
 import useSeo, { breadcrumbSchema } from '../lib/useSeo';
-import { categories, photos, sectionFor, stats, videos, websites, type Category } from '../data/portfolio';
+import { catFromSlug, categories, photos, sectionFor, slugFromCat, stats, videos, websites, type Category } from '../data/portfolio';
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -89,8 +90,17 @@ const fade = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity
 
 export default function Work() {
   useSeo(seo);
-  const [cat, setCat] = useState<Category>('All Work');
+  const [params, setParams] = useSearchParams();
+  const urlCat = catFromSlug(params.get('category'));
+  const [cat, setCat] = useState<Category>(urlCat ?? 'All Work');
   const top = useRef<HTMLDivElement>(null);
+  // Navbar links (/work?category=...) switch the filter and bring the gallery into view.
+  useEffect(() => {
+    if (!urlCat) return;
+    setCat(urlCat);
+    const t = setTimeout(() => { const y = (top.current?.getBoundingClientRect().top ?? 0) + window.scrollY - 70; window.scrollTo({ top: y, behavior: 'smooth' }); }, 250);
+    return () => clearTimeout(t);
+  }, [urlCat]);
   const show = sectionFor(cat);
   const match = <T extends { cats: Category[] }>(list: T[]) => (cat === 'All Work' ? list : list.filter((x) => x.cats.includes(cat)));
   const vids = useMemo(() => match(videos), [cat]);
@@ -98,6 +108,8 @@ export default function Work() {
 
   const pick = (c: Category) => {
     setCat(c);
+    const slug = slugFromCat(c);
+    setParams(slug ? { category: slug } : {}, { replace: true, preventScrollReset: true });
     const y = (top.current?.getBoundingClientRect().top ?? 0) + window.scrollY - 70;
     if (window.scrollY > y) window.scrollTo({ top: y, behavior: 'smooth' });
   };
@@ -110,7 +122,9 @@ export default function Work() {
       <AnimatePresence mode="popLayout" initial={false}>
         {show.videos && vids.length > 0 && (
           <motion.section key={`videos-${cat}`} {...fade} id="videos" className="bg-ink py-16 text-paper md:py-24">
-            <Head dark kicker="Reels" title="Made for the scroll." sub="Short-form vertical reels shot and edited by EVM. Tap any reel to play it with sound." />
+            {cat === 'Video Production'
+              ? <Head dark kicker="Video production" title="Films with a story." sub="Our showreel and corporate film work, shot and edited by EVM. Tap a video to play it with sound." />
+              : <Head dark kicker="Reels" title="Made for the scroll." sub="Short-form vertical reels shot and edited by EVM. Tap any reel to play it with sound." />}
             <div className="wrap"><ReelGrid items={vids} /></div>
           </motion.section>
         )}

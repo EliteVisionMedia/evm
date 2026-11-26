@@ -7,6 +7,7 @@ const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
 export interface ContactPayload {
   firstName: string;
   lastName: string;
+  location: string;
   email: string;
   phone: string;
   /** Selected services (one or more). */

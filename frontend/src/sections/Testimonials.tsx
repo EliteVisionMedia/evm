@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Star } from 'lucide-react';
+import { Quote } from 'lucide-react';
 import { motion, useReducedMotion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react';
 import { testimonials } from '../data/site';
 import type { Testimonial } from '../types';
@@ -9,44 +9,17 @@ type RichTestimonial = Testimonial & {
   image?: string;
 };
 
-const demoImages = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=800&q=80',
-];
+/** First two letters of the name, e.g. "Indhu Shanmugam" -> "IS", "Orator" -> "OR". */
+const initials = (name: string) => {
+  const parts = name.trim().split(/\s+/);
+  return (parts.length > 1 ? parts[0][0] + parts[1][0] : parts[0].slice(0, 2)).toUpperCase();
+};
 
-const extraDemoTestimonials: RichTestimonial[] = [
-  {
-    name: 'Elena Rostova',
-    company: 'Vespera Labs',
-    quote:
-      'From our very first strategy call, the team understood our positioning better than agencies we had worked with for years. Every milestone shipped on schedule.',
-    highlight: 'Our inbound demo requests doubled within six weeks of launch.',
-    image: demoImages[3],
-    sample: true,
-  },
-  {
-    name: 'Marcus Vance',
-    company: 'Northstar Logistics',
-    quote:
-      'We needed a complete visual overhaul without losing the trust of our enterprise buyers. The new experience feels sharp, fast, and unmistakable.',
-    highlight: 'Clear communication, zero guesswork, and measurable ROI.',
-    image: demoImages[4],
-    sample: true,
-  },
-  {
-    name: 'Priya Nair',
-    company: 'Kova Studio',
-    quote:
-      'They turned a scattered brief into a cohesive brand system and high-converting site. Every detail felt intentional from typography to motion.',
-    highlight: 'Best creative partnership we have had to date.',
-    image: demoImages[5],
-    sample: true,
-  },
-];
+function Avatar({ item, className }: { item: RichTestimonial; className: string }) {
+  return item.image
+    ? <img src={item.image} alt={item.name} loading="lazy" className={`object-cover object-top ${className}`} />
+    : <span aria-hidden className={`grid place-items-center bg-gradient-to-br from-teal to-teal-deep font-display font-bold text-white ${className}`}>{initials(item.name)}</span>;
+}
 
 const glows = [
   'radial-gradient(55% 55% at 50% 45%, rgba(1, 154, 157, 0.34) 0%, rgba(1, 127, 130, 0.12) 45%, transparent 75%)',
@@ -54,19 +27,8 @@ const glows = [
   'radial-gradient(55% 55% at 68% 35%, rgba(1, 154, 157, 0.25) 0%, transparent 72%)',
 ];
 
-function Stars({ count = 5 }: { count?: number }) {
-  return (
-    <div className="flex items-center gap-1" aria-label={`${count} out of 5 stars`}>
-      {Array.from({ length: count }).map((_, idx) => (
-        <Star
-          key={idx}
-          size={15}
-          className="fill-teal text-teal"
-          strokeWidth={1.75}
-        />
-      ))}
-    </div>
-  );
+function Source() {
+  return <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.1em] text-teal"><Quote size={15} className="fill-teal" /> Google review</span>;
 }
 
 function SectionHeader({ className = '' }: { className?: string }) {
@@ -79,16 +41,14 @@ function SectionHeader({ className = '' }: { className?: string }) {
         Happy Clients.
       </h2>
       <p className="mx-auto mt-3.5 max-w-[38ch] text-sm leading-relaxed text-white/70 md:text-base">
-        In their own words, from the brands we work with.{' '}
-        <span className="sample-tag">Sample testimonials, to be replaced</span>
+        In their own words, from our Google reviews.
       </p>
     </div>
   );
 }
 
-function TestimonialCard({ item, index }: { item: RichTestimonial; index: number }) {
+function TestimonialCard({ item }: { item: RichTestimonial; index: number }) {
   const [flipped, setFlipped] = useState(false);
-  const cardImg = item.image || item.avatar || demoImages[index % demoImages.length];
 
   return (
     <div
@@ -114,7 +74,7 @@ function TestimonialCard({ item, index }: { item: RichTestimonial; index: number
         {/* FRONT FACE (Normal Testimonial Card) */}
         <article className="absolute inset-0 flex flex-col justify-between rounded-[24px] border border-white/10 bg-[#141619] p-6 text-left text-white shadow-[0_24px_60px_rgba(0,0,0,0.7)] [backface-visibility:hidden] md:p-7">
           <div>
-            <Stars count={5} />
+            <Source />
 
             <p className="mt-5 text-[14.5px] leading-[1.58] text-white/85">
               “{item.quote}”
@@ -129,16 +89,10 @@ function TestimonialCard({ item, index }: { item: RichTestimonial; index: number
 
           <div className="mt-6 flex items-center justify-between gap-3 pt-1">
             <div className="flex min-w-0 items-center gap-3.5">
-              <img
-                src={cardImg}
-                alt={item.name}
-                loading="lazy"
-                className="h-10 w-10 shrink-0 rounded-[6px] object-cover object-top ring-1 ring-white/15"
-              />
+              <Avatar item={item} className="h-10 w-10 shrink-0 rounded-[6px] text-sm ring-1 ring-white/15" />
               <div className="min-w-0 leading-tight">
                 <div className="truncate font-display text-sm font-bold text-white">
                   {item.name}
-                  {item.sample && <span className="sample-tag ml-2">Sample</span>}
                 </div>
                 {item.company && (
                   <div className="mt-0.5 truncate text-xs text-white/60">
@@ -149,27 +103,22 @@ function TestimonialCard({ item, index }: { item: RichTestimonial; index: number
             </div>
 
             <span className="shrink-0 text-[11px] font-medium text-teal/80 md:hidden">
-              Tap photo
+              Tap card
             </span>
           </div>
         </article>
 
         {/* BACK FACE (Full User Portrait Revealed on Hover / Tap) */}
         <article className="absolute inset-0 overflow-hidden rounded-[28px] border border-teal/40 bg-[#141619] text-left text-white shadow-[0_28px_70px_rgba(1,154,157,0.28)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
-          <img
-            src={cardImg}
-            alt={item.name}
-            loading="lazy"
-            className="h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105"
-          />
+          <Avatar item={item} className="h-full w-full text-[120px] tracking-[-0.03em] transition-transform duration-700 ease-out group-hover:scale-105" />
           <div
             aria-hidden
             className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent"
           />
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-6 md:p-7">
             <div>
-              <Stars count={5} />
-              <p className="mt-2 font-display text-lg font-bold text-white">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/80">Google review</p>
+              <p className="mt-1 font-display text-lg font-bold text-white">
                 {item.name}
               </p>
               {item.company && (
@@ -227,11 +176,7 @@ export default function Testimonials() {
   const reduce = useReducedMotion();
 
   const allTestimonials: RichTestimonial[] = [
-    ...testimonials.map((t, i) => ({
-      ...t,
-      image: t.avatar || demoImages[i % demoImages.length],
-    })),
-    ...extraDemoTestimonials,
+    ...testimonials.map((t) => ({ ...t, image: t.avatar })),
   ];
 
   const { scrollYProgress } = useScroll({

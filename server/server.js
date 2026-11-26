@@ -4,8 +4,10 @@ const env = require('./src/config/env');
 const { connectDB, disconnectDB } = require('./src/config/db');
 
 async function start() {
-  await connectDB(env.mongoUri);
   const server = app.listen(env.port, () => console.log(`[server] API listening on http://localhost:${env.port}`));
+  // Connect after listening so the website stays up even if MongoDB is slow or unreachable.
+  const tryConnect = () => connectDB(env.mongoUri).catch((err) => { console.error('[db]', err.message); setTimeout(tryConnect, 30000); });
+  if (env.mongoUri) tryConnect();
   server.on('error', async (err) => {
     if (err.code === 'EADDRINUSE') {
       console.error(`[server] Port ${env.port} is already in use. Another EVM server (or app) is still running. Stop it, then start again.`);

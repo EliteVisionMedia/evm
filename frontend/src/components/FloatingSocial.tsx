@@ -1,166 +1,64 @@
-import { forwardRef, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { Instagram, Linkedin, Share2, X, type LucideIcon, type LucideProps } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { motion, useReducedMotion } from 'motion/react';
+import { Instagram, Linkedin, type LucideProps } from 'lucide-react';
 import { contact, socials } from '../data/site';
 
-const WhatsAppIcon = forwardRef<SVGSVGElement, LucideProps>(function WhatsAppIcon({ size = 18, ...props }, ref) {
+/** WhatsApp glyph (lucide has no brand icon for it). */
+function WhatsAppIcon({ size = 20 }: LucideProps) {
   return (
-    <svg
-      ref={ref}
-      {...props}
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
-      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M17.47 14.38c-.3-.15-1.75-.86-2.02-.96-.27-.1-.47-.15-.67.15-.2.3-.77.96-.94 1.16-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47-.88-.79-1.47-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.03-.52-.07-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.22 1.36.19 1.87.12.57-.09 1.75-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35M12.05 21.5h-.01a9.4 9.4 0 0 1-4.8-1.31l-.34-.2-3.57.93.95-3.48-.22-.36a9.43 9.43 0 1 1 7.99 4.42m8.02-17.45A11.28 11.28 0 0 0 12.05.75C5.8.75.71 5.84.71 12.1c0 2 .52 3.95 1.52 5.67L.62 23.25l5.6-1.47a11.3 11.3 0 0 0 5.82 1.6h.01c6.25 0 11.34-5.1 11.34-11.35 0-3.03-1.18-5.88-3.32-8.02" />
     </svg>
   );
-});
-
-interface FloatingLink {
-  key: string;
-  label: string;
-  href: string;
-  ariaLabel: string;
-  Icon: LucideIcon;
 }
 
 const instagram = socials.find((s) => s.icon === 'instagram');
 const linkedin = socials.find((s) => s.icon === 'linkedin');
 
-/** Top-to-bottom display order: WhatsApp first, LinkedIn nearest the main button. */
-const links: FloatingLink[] = [
-  {
-    key: 'whatsapp',
-    label: 'WhatsApp',
-    href: contact.whatsappWithText("Hi EVM, I'd like to discuss a project."),
-    ariaLabel: 'Chat with Elite Vision Media on WhatsApp (opens in a new tab)',
-    Icon: WhatsAppIcon,
-  },
-  ...(instagram
-    ? [
-        {
-          key: 'instagram',
-          label: instagram.label,
-          href: instagram.href,
-          ariaLabel: `Elite Vision Media on ${instagram.label} (opens in a new tab)`,
-          Icon: Instagram,
-        },
-      ]
-    : []),
-  ...(linkedin
-    ? [
-        {
-          key: 'linkedin',
-          label: linkedin.label,
-          href: linkedin.href,
-          ariaLabel: `Elite Vision Media on ${linkedin.label} (opens in a new tab)`,
-          Icon: Linkedin,
-        },
-      ]
-    : []),
+const links = [
+  { key: 'whatsapp', label: 'WhatsApp', href: contact.whatsappWithText("Hi EVM, I'd like to discuss a project."), Icon: WhatsAppIcon },
+  ...(instagram ? [{ key: 'instagram', label: 'Instagram', href: instagram.href, Icon: Instagram }] : []),
+  ...(linkedin ? [{ key: 'linkedin', label: 'LinkedIn', href: linkedin.href, Icon: Linkedin }] : []),
 ];
 
-/** Site-wide floating social menu. Mounted once in App, below the mobile menu and modals in stacking order. */
+/** Site-wide floating WhatsApp / Instagram / LinkedIn links, stacked on the right edge. */
 export default function FloatingSocial() {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const btnRef = useRef<HTMLButtonElement>(null);
   const reduce = useReducedMotion();
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointer = (e: PointerEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false);
-        btnRef.current?.focus();
-      }
-    };
-    document.addEventListener('pointerdown', onPointer);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('pointerdown', onPointer);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [open]);
-
+  const { pathname } = useLocation();
+  // The Contact page already has its own WhatsApp and contact links.
+  if (pathname.startsWith('/contact')) return null;
   return (
-    <div
-      ref={rootRef}
-      className="fixed z-30 flex flex-col items-center gap-3 right-[max(16px,env(safe-area-inset-right,0px))] bottom-[calc(88px+env(safe-area-inset-bottom,0px))] md:right-6 md:bottom-[calc(100px+env(safe-area-inset-bottom,0px))]"
-      onBlur={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setOpen(false)}
+    <nav
+      aria-label="Elite Vision Media on social media"
+      className="fixed z-30 right-[max(10px,env(safe-area-inset-right,0px))] bottom-[calc(16px+env(safe-area-inset-bottom,0px))] md:right-6 md:bottom-[calc(100px+env(safe-area-inset-bottom,0px))]"
     >
-      <AnimatePresence>
-        {open && (
-          <motion.ul
-            id="floating-social-list"
-            className="flex flex-col items-center gap-3"
-            initial="closed"
-            animate="open"
-            exit="closed"
-            variants={{
-              open: { transition: { staggerChildren: reduce ? 0 : 0.05, staggerDirection: -1 } },
-              closed: { transition: { staggerChildren: reduce ? 0 : 0.04 } },
-            }}
+      <ul className="flex flex-col items-center gap-2.5 md:gap-3">
+        {links.map(({ key, label, href, Icon }, i) => (
+          <motion.li
+            key={key}
+            className="group relative"
+            initial={reduce ? false : { opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.45, delay: 0.6 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
           >
-            {links.map(({ key, label, href, ariaLabel, Icon }) => (
-              <motion.li
-                key={key}
-                className="group relative"
-                variants={{
-                  open: { opacity: 1, y: 0, scale: 1 },
-                  closed: { opacity: 0, y: reduce ? 0 : 14, scale: reduce ? 1 : 0.8 },
-                }}
-                transition={{ duration: reduce ? 0.01 : 0.25, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={ariaLabel}
-                  className="grid h-11 w-11 place-items-center rounded-full border border-line bg-white text-ink shadow-[0_8px_20px_-8px_rgba(12,13,17,0.35)] transition-[transform,background-color,color] duration-200 hover:scale-105 hover:bg-teal hover:text-white focus-visible:bg-teal focus-visible:text-white"
-                >
-                  <Icon size={18} />
-                </a>
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute right-full top-1/2 mr-3 -translate-y-1/2 whitespace-nowrap rounded-md bg-ink px-2.5 py-1 text-xs font-medium text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
-                >
-                  {label}
-                </span>
-              </motion.li>
-            ))}
-          </motion.ul>
-        )}
-      </AnimatePresence>
-
-      <button
-        ref={btnRef}
-        type="button"
-        aria-label={open ? 'Close social media links' : 'Open social media links'}
-        aria-expanded={open}
-        aria-controls="floating-social-list"
-        onClick={() => setOpen((v) => !v)}
-        className="grid h-14 w-14 place-items-center rounded-full bg-teal text-white shadow-[0_12px_28px_-8px_rgba(1,154,157,0.6)] transition-[transform,box-shadow,background-color] duration-300 hover:-translate-y-0.5 hover:bg-teal-deep hover:shadow-[0_16px_32px_-8px_rgba(1,154,157,0.7)]"
-      >
-        <motion.span
-          className="grid place-items-center"
-          animate={{ rotate: open ? 90 : 0 }}
-          transition={{ duration: reduce ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {open ? <X size={22} aria-hidden /> : <Share2 size={22} aria-hidden />}
-        </motion.span>
-      </button>
-    </div>
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Elite Vision Media on ${label} (opens in a new tab)`}
+              className="grid h-12 w-12 place-items-center rounded-full border border-line bg-white text-teal shadow-[0_10px_24px_-10px_rgba(12,13,17,0.4)] transition-[transform,background-color,color,border-color,box-shadow] duration-300 hover:-translate-y-0.5 hover:scale-110 hover:border-teal hover:bg-teal hover:text-white hover:shadow-[0_14px_28px_-10px_rgba(1,154,157,0.7)] focus-visible:bg-teal focus-visible:text-white md:h-14 md:w-14 motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100"
+            >
+              <Icon size={24} />
+            </a>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute right-full top-1/2 mr-3 hidden -translate-y-1/2 translate-x-1 whitespace-nowrap rounded-md bg-ink px-2.5 py-1 text-xs font-medium text-white opacity-0 transition-[opacity,transform] duration-200 group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:opacity-100 md:block"
+            >
+              {label}
+            </span>
+          </motion.li>
+        ))}
+      </ul>
+    </nav>
   );
 }

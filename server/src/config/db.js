@@ -29,11 +29,13 @@ function safeTarget(uri) {
   }
 }
 
+// Registered once at load, so connection retries never add duplicate listeners.
+mongoose.set('strictQuery', true);
+mongoose.connection.on('disconnected', () => console.warn('[db] MongoDB disconnected'));
+mongoose.connection.on('reconnected', () => console.log('[db] MongoDB reconnected'));
+mongoose.connection.on('error', (err) => console.error('[db] MongoDB error:', describeError(err, process.env.MONGODB_URI)));
+
 async function connectDB(uri) {
-  mongoose.set('strictQuery', true);
-  mongoose.connection.on('disconnected', () => console.warn('[db] MongoDB disconnected'));
-  mongoose.connection.on('reconnected', () => console.log('[db] MongoDB reconnected'));
-  mongoose.connection.on('error', (err) => console.error('[db] MongoDB error:', describeError(err, uri)));
 
   console.log(`[db] connecting to ${safeTarget(uri)} ...`);
   try {
